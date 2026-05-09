@@ -1,0 +1,1227 @@
+    <!DOCTYPE html>
+    <html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Peta Kompetitor Coffeeshop Kawasan Lembang</title>
+
+        <!-- Font Awesome -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+        <!-- Leaflet Map CSS -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <!-- Leaflet Locate Control CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
+        <!-- Leaflet Fullscreen CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-fullscreen@1.0.2/dist/leaflet.fullscreen.css" />
+        
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            /* BODY DENGAN SATU BACKGROUND GAMBAR */
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                line-height: 1.6;
+                color: white;
+                background-image: url("https://i.pinimg.com/736x/ed/f3/5b/edf35b1d5d751acf61fa4e7adbc41f35.jpg");
+                background-size: cover;
+                background-position: center;
+                background-attachment: fixed;
+                background-repeat: no-repeat;
+                position: relative;
+            }
+
+            /* OVERLAY GELAP DI SELURUH HALAMAN */
+            body::before {
+                content: "";
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: -1;
+            }
+
+            .container {
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: 0 1.5rem;
+                position: relative;
+                z-index: 1;
+            }
+
+            /* Header */
+            .header {
+                background-color: rgba(249, 250, 251, 0.95);
+                backdrop-filter: blur(10px);
+                border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+                padding: 0.75rem 0;
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+                transition: transform 0.3s ease;
+            }
+
+            .header .container {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .menu-btn, .search-btn {
+                background: none;
+                border: none;
+                color: #4b5563;
+                font-size: 1.25rem;
+                cursor: pointer;
+                padding: 0.5rem;
+                border-radius: 0.375rem;
+                transition: all 0.2s;
+            }
+
+            .menu-btn:hover, .search-btn:hover {
+                color: #2563eb;
+                background-color: rgba(37, 99, 235, 0.1);
+            }
+
+            .nav {
+                display: none;
+                gap: 2rem;
+            }
+
+            .nav-link {
+                text-decoration: none;
+                color: #4b5563;
+                font-weight: 500;
+                transition: color 0.2s;
+                padding: 0.5rem 0;
+            }
+
+            .nav-link:hover, .nav-link.active {
+                color: #2563eb;
+            }
+
+            /* Hero - Tanpa overlay terpisah */
+            .hero {
+                position: relative;
+                height: 28rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+                background: transparent;
+            }
+
+            .hero-overlay {
+                display: none;
+            }
+
+            .hero-content {
+                position: relative;
+                z-index: 10;
+                text-align: center;
+                color: white;
+                padding: 0 1rem;
+            }
+
+            .hero-title {
+                font-size: 3rem;
+                font-weight: bold;
+                margin-bottom: 1rem;
+                line-height: 1.2;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            }
+
+            .hero-subtitle {
+                font-size: 1.25rem;
+                opacity: 0.95;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            }
+
+            /* Cards Section - Background transparan dengan blur */
+            .popular-places {
+                padding: 4rem 0;
+                background: rgba(255, 255, 255, 0.15);
+                backdrop-filter: blur(8px);
+                margin: 1rem 0;
+                border-radius: 30px;
+            }
+
+            .section-header {
+                text-align: center;
+                margin-bottom: 2.5rem;
+            }
+
+            .section-title {
+                font-size: 2.25rem;
+                font-weight: bold;
+                margin-bottom: 0.75rem;
+                color: white;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            }
+
+            .section-subtitle {
+                font-size: 1.1rem;
+                color: rgba(255, 255, 255, 0.9);
+                margin-bottom: 2rem;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            }
+
+            .popular-btn {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: none;
+                padding: 0.75rem 2rem;
+                border-radius: 9999px;
+                font-weight: 500;
+                font-size: 1rem;
+                cursor: pointer;
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+
+            .popular-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            }
+
+            .hospitals-container {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 30px;
+                padding: 20px;
+            }
+
+            .hospital-card {
+                width: 300px;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 16px;
+                overflow: hidden;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                background: rgba(255, 255, 255, 0.95);
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                cursor: pointer;
+            }
+
+            .hospital-card:hover {
+                transform: translateY(-6px);
+                box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+            }
+
+            .hospital-image img {
+                width: 100%;
+                height: 200px;
+                object-fit: cover;
+                transition: transform 0.3s ease;
+            }
+
+            .hospital-card:hover .hospital-image img {
+                transform: scale(1.05);
+            }
+
+            .hospital-content {
+                padding: 16px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .hospital-info {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .hospital-name {
+                font-size: 18px;
+                font-weight: bold;
+                margin-bottom: 6px;
+                color: #1f2937;
+            }
+
+            .rating {
+                display: flex;
+                align-items: center;
+                font-size: 14px;
+                color: #f59e0b;
+            }
+
+            .stars i {
+                margin-right: 2px;
+            }
+
+            .rating-text {
+                margin-left: 6px;
+                color: #6b7280;
+                font-weight: 500;
+            }
+
+            .arrow-btn {
+                background: none;
+                border: none;
+                font-size: 20px;
+                color: #9ca3af;
+                cursor: pointer;
+                transition: all 0.2s;
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .arrow-btn:hover {
+                color: #2563eb;
+                transform: translateX(3px);
+            }
+
+            /* Map Section */
+            .map-section {
+                padding: 4rem 0;
+                background: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(5px);
+                margin: 1rem 0;
+                border-radius: 30px;
+            }
+
+            .search-container {
+                max-width: 32rem;
+                margin: 0 auto 2rem;
+            }
+
+            .search-box {
+                position: relative;
+            }
+
+            .search-icon {
+                position: absolute;
+                left: 1rem;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #9ca3af;
+                font-size: 1rem;
+            }
+
+            .search-input {
+                width: 100%;
+                padding: 1rem 1rem 1rem 3rem;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 16px;
+                font-size: 1rem;
+                transition: all 0.2s;
+                background: rgba(255, 255, 255, 0.95);
+            }
+
+            .search-input:focus {
+                outline: none;
+                border-color: #667eea;
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+            }
+
+            .map-container {
+                width: 100%;
+                max-width: 100%;
+                margin: 0 auto;
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            }
+
+            #map {
+                width: 100%;
+                height: 650px;
+                background-color: #e5e7eb;
+            }
+
+            /* Data Section */
+            .data-section {
+                padding: 4rem 0;
+                background: rgba(255, 255, 255, 0.15);
+                backdrop-filter: blur(8px);
+                margin: 1rem 0;
+                border-radius: 30px;
+            }
+
+            .data-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+                gap: 2rem;
+                margin-top: 2rem;
+            }
+
+            .data-card {
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: 20px;
+                padding: 1.75rem;
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+            }
+
+            .data-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+            }
+
+            .data-icon {
+                width: 60px;
+                height: 60px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border-radius: 18px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 1.25rem;
+            }
+
+            .data-icon i {
+                font-size: 1.75rem;
+                color: white;
+            }
+
+            .data-title {
+                font-size: 1.35rem;
+                font-weight: 600;
+                margin-bottom: 0.75rem;
+                color: #1f2937;
+            }
+
+            .data-text {
+                color: #4b5563;
+                font-size: 0.9rem;
+                line-height: 1.6;
+            }
+
+            /* Footer */
+            .footer {
+                background: rgba(31, 41, 55, 0.95);
+                backdrop-filter: blur(10px);
+                color: #e5e7eb;
+                padding: 2.5rem 0;
+                margin-top: 1rem;
+                border-radius: 30px 30px 0 0;
+            }
+
+            .footer-content {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 2.5rem;
+                margin-bottom: 2rem;
+            }
+
+            .developer-info {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .avatar {
+                width: 3.5rem;
+                height: 3.5rem;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: bold;
+                font-size: 1.2rem;
+            }
+
+            .developer-name {
+                font-weight: 600;
+                margin-bottom: 0.25rem;
+                color: white;
+                font-size: 1rem;
+            }
+
+            .developer-role {
+                font-size: 0.9rem;
+                color: #9ca3af;
+            }
+
+            .footer-title {
+                font-weight: 600;
+                margin-bottom: 1rem;
+                color: white;
+                font-size: 1.1rem;
+            }
+
+            .contact-item {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                font-size: 0.9rem;
+                color: #d1d5db;
+                cursor: pointer;
+                transition: color 0.2s;
+            }
+
+            .contact-item:hover {
+                color: #667eea;
+            }
+
+            .social-links {
+                display: flex;
+                gap: 1rem;
+            }
+
+            .social-link {
+                color: #d1d5db;
+                font-size: 1.35rem;
+                padding: 0.5rem;
+                border-radius: 0.5rem;
+                transition: all 0.2s;
+                text-decoration: none;
+            }
+
+            .social-link:hover {
+                color: #667eea;
+                transform: translateY(-2px);
+            }
+
+            .footer-bottom {
+                border-top: 1px solid #374151;
+                padding-top: 1.5rem;
+                text-align: center;
+            }
+
+            .footer-bottom p {
+                font-size: 0.9rem;
+                color: #9ca3af;
+            }
+
+            /* Popup Styling */
+            .kompetitor-popup-wrapper .leaflet-popup-content-wrapper {
+                border-radius: 16px;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+                padding: 0;
+                overflow: hidden;
+            }
+
+            .kompetitor-popup-wrapper .leaflet-popup-content {
+                margin: 0;
+                padding: 0;
+                min-width: 250px;
+            }
+
+            .kompetitor-popup {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            }
+
+            .kompetitor-popup-header {
+                background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+                padding: 12px 16px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .kompetitor-popup-header h4 {
+                color: white;
+                font-size: 15px;
+                font-weight: 600;
+                margin: 0;
+            }
+
+            .kompetitor-popup-header i {
+                color: white;
+                font-size: 16px;
+            }
+
+            .kompetitor-popup-body {
+                padding: 12px 16px;
+                background: white;
+            }
+
+            .kompetitor-popup-row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 0;
+                font-size: 13px;
+                color: #333;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .kompetitor-popup-row:last-child {
+                border-bottom: none;
+            }
+
+            .kompetitor-popup-row i {
+                width: 22px;
+                text-align: center;
+                color: #666;
+            }
+
+            .kompetitor-popup-row a {
+                text-decoration: none;
+            }
+
+            /* Custom Marker */
+            .custom-marker-kompetitor {
+                background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+                border-radius: 50%;
+                width: 36px !important;
+                height: 36px !important;
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+                border: 2px solid white;
+                cursor: pointer;
+                transition: transform 0.2s;
+            }
+
+            .custom-marker-kompetitor:hover {
+                transform: scale(1.15);
+            }
+
+            .custom-marker-kompetitor i {
+                font-size: 16px;
+                color: white;
+            }
+
+            /* Legend Styling */
+            .custom-legend {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(8px);
+                border-radius: 16px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                padding: 12px 16px;
+                font-family: sans-serif;
+                font-size: 12px;
+                min-width: 180px;
+                max-height: 400px;
+                overflow-y: auto;
+                line-height: 1.4;
+            }
+            
+            .custom-legend strong {
+                font-size: 13px;
+                display: block;
+                margin-bottom: 10px;
+                color: #1f2937;
+                border-bottom: 2px solid #667eea;
+                padding-bottom: 5px;
+            }
+            
+            .legend-item {
+                display: flex;
+                align-items: center;
+                margin-bottom: 8px;
+            }
+
+            .legend-item span {
+                color: #1f2937;
+                font-weight: 500;
+                font-size: 12px;
+            }
+
+            .legend-color {
+                width: 20px;
+                height: 20px;
+                margin-right: 10px;
+                border-radius: 4px;
+                border: 1px solid rgba(0,0,0,0.1);
+            }
+
+            /* Layer Control */
+            .leaflet-control-layers {
+                border-radius: 12px !important;
+                border: none !important;
+                background: rgba(255, 255, 255, 0.95) !important;
+                backdrop-filter: blur(4px);
+            }
+
+
+            /* Responsive */
+            @media (min-width: 768px) {
+                .nav { display: flex; }
+                .hero-title { font-size: 3.5rem; }
+            }
+
+            @media (max-width: 767px) {
+                .nav { display: none; }
+                .nav.active {
+                    display: flex;
+                    flex-direction: column;
+                    position: absolute;
+                    top: 100%;
+                    left: 0;
+                    right: 0;
+                    background: rgba(249, 250, 251, 0.98);
+                    backdrop-filter: blur(10px);
+                    padding: 1rem;
+                    gap: 1rem;
+                    z-index: 999;
+                }
+                .hero-title { font-size: 1.75rem; }
+                .hero { height: 18rem; }
+                #map { height: 450px; }
+                .hospital-card { width: 90%; max-width: 340px; }
+                .popular-places, .map-section, .data-section {
+                    margin: 0.5rem;
+                    border-radius: 20px;
+                }
+                .music-control {
+                    width: 40px;
+                    height: 40px;
+                    font-size: 16px;
+                    bottom: 15px;
+                    right: 15px;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .hero-title { font-size: 1.5rem; }
+                .section-title { font-size: 1.5rem; }
+                #map { height: 400px; }
+            }
+
+            html { scroll-behavior: smooth; }
+        </style>
+    </head>
+    <body>
+        <!-- Background Music -->
+        <audio id="bgMusic" loop preload="auto">
+            <!-- Ganti URL lagu di bawah ini dengan lagu yang Anda inginkan -->
+            <source src="Asset/BandaNeira.mp3" type="audio/mpeg">
+            Musik tidak dapat diputar. Browser Anda tidak mendukung audio.
+        </audio>
+
+        <!-- Header -->
+        <header class="header">
+            <div class="container">
+                <button class="menu-btn" id="menuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <nav class="nav" id="nav">
+                    <a href="#Home" class="nav-link active">Home</a>
+                    <a href="#map-section" class="nav-link">Map</a>
+                    <a href="#kintil" class="nav-link">Data</a>
+                    <a href="#footer" class="nav-link">About Creator</a>
+                </nav>
+                <button class="search-btn" id="searchBtn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Hero -->
+        <section class="hero" id="Home">
+            <div class="hero-content">
+                <h1 class="hero-title">PETA KOMPETITOR<br>COFFEESHOP KAWASAN LEMBANG</h1>
+                <p class="hero-subtitle">Kesesuaian Lokasi Kompetitor Di Kawasan Lembang</p>
+            </div>
+        </section>
+
+        <!-- Cards -->
+        <section class="popular-places">
+            <div class="container">
+                <div class="section-header">
+                    <button class="popular-btn">Rekomendasi Tempat Unggulan</button>
+                </div>
+                <div class="hospitals-container">
+                    <div class="hospital-card" data-link="#">
+                        <div class="hospital-image">
+                            <img src="Asset/coffee1.jpg" alt="Kopi Mandja Lembang" onerror="this.src='data:image/jpeg;base64,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'" >
+                        </div>
+                        <div class="hospital-content">
+                            <div class="hospital-info">
+                                <h3 class="hospital-name">Kopi Mandja Lembang</h3>
+                                <div class="rating">
+                                    <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                                    <span class="rating-text">4.8</span>
+                                </div>
+                            </div>
+                            <button class="arrow-btn"><i class="fas fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="hospital-card" data-link="#">
+                        <div class="hospital-image">
+                            <img src="Asset/coffee2.jpg" alt="Limasegi Dipinus Coffee Cikole" onerror="this.src='data:image/jpeg;base64,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'">
+                        </div>
+                        <div class="hospital-content">
+                            <div class="hospital-info">
+                                <h3 class="hospital-name">Limasegi Dipinus Coffee Cikole</h3>
+                                <div class="rating">
+                                    <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                                    <span class="rating-text">4.9</span>
+                                </div>
+                            </div>
+                            <button class="arrow-btn"><i class="fas fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="hospital-card" data-link="#">
+                        <div class="hospital-image">
+                            <img src="Asset/coffee3.jpg" alt="Piknik Kopi" onerror="this.src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrSb3gK0VDA1UOYRW-_XM_8QZ9L_JgIOpxcw&s'">
+                        </div>
+                        <div class="hospital-content">
+                            <div class="hospital-info">
+                                <h3 class="hospital-name">Piknik Kopi</h3>
+                                <div class="rating">
+                                    <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
+                                    <span class="rating-text">4.7</span>
+                                </div>
+                            </div>
+                            <button class="arrow-btn"><i class="fas fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Map Section -->
+        <section class="map-section" id="map-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Peta Interaktif Lembang</h2>
+                    <p class="section-subtitle">Temukan lokasi coffee shop, penggunaan lahan, dan kesesuaian wilayah</p>
+                </div>
+                <div class="search-container">
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" placeholder="Cari lokasi kompetitor..." class="search-input" id="searchInput">
+                    </div>
+                </div>
+                <div class="map-container">
+                    <div id="map"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Data Section -->
+        <section class="data-section" id="kintil">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Data Kawasan Lembang</h2>
+                </div>
+                <div class="data-grid">
+                    <div class="data-card">
+                        <div class="data-icon"><i class="fas fa-mug-hot"></i></div>
+                        <div class="data-content">
+                            <h3 class="data-title">Coffee Shop</h3>
+                            <p class="data-text">Kawasan Lembang memiliki puluhan coffee shop yang tersebar di berbagai titik, menawarkan pemandangan alam pegunungan yang indah serta udara sejuk khas dataran tinggi.</p>
+                        </div>
+                    </div>
+                    <div class="data-card">
+                        <div class="data-icon"><i class="fas fa-store"></i></div>
+                        <div class="data-content">
+                            <h3 class="data-title">Kompetitor Bisnis</h3>
+                            <p class="data-text">Terdapat berbagai kompetitor di sektor kuliner dan kopi yang tersebar di wilayah Lembang, mulai dari kedai kopi skala kecil hingga kafe besar dengan fasilitas lengkap.</p>
+                        </div>
+                    </div>
+                    <div class="data-card">
+                        <div class="data-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="data-content">
+                            <h3 class="data-title">Tingkat Kesesuaian</h3>
+                            <p class="data-text">Analisis kesesuaian lahan untuk pengembangan coffee shop berdasarkan faktor aksesibilitas, kepadatan penduduk, dan potensi wisata di kawasan Lembang.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer" id="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-section">
+                        <div class="developer-info">
+                            <div class="avatar">4</div>
+                            <div class="developer-details">
+                                <h4 class="developer-name">Kelompok 2</h4>
+                                <p class="developer-role">Penginderaan Jauh Ekonomi Bisnis</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; 2025 Peta Tematik Lembang. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Music Control Button -->
+        <button id="musicControl" class="music-control">
+            <i class="fas fa-music"></i>
+        </button>
+
+        <!-- Scripts -->
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/leaflet-fullscreen@1.0.2/dist/Leaflet.fullscreen.min.js"></script>
+        
+        <script>
+            function escapeHtml(str) {
+                if (!str) return '';
+                return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+
+                // Mobile menu
+                const menuBtn = document.getElementById('menuBtn');
+                const nav = document.getElementById('nav');
+                if (menuBtn) {
+                    menuBtn.addEventListener('click', function() { nav.classList.toggle('active'); });
+                }
+
+                // Smooth scroll
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        if (nav) nav.classList.remove('active');
+                        const target = document.querySelector(this.getAttribute('href'));
+                        if (target) target.scrollIntoView({ behavior: 'smooth' });
+                    });
+                });
+
+                // Initialize map
+                const map = L.map('map', {
+                    center: [-6.82, 107.62],
+                    zoom: 13,
+                    fullscreenControl: true,
+                    fullscreenControlOptions: { position: 'topright' }
+                });
+
+                // Basemap layers
+                const baseOSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
+                const baseTopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenTopoMap' });
+                const baseHot = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { attribution: '&copy; OSM HOT' });
+
+                const baseMaps = { "OpenStreetMap": baseOSM, "Topographic": baseTopo, "Humanitarian (HOT)": baseHot };
+                const overlayLayers = {};
+                const layerControl = L.control.layers(baseMaps, overlayLayers, { position: 'topright' }).addTo(map);
+
+                // Color palette for REMARK
+                const colorPalette = ["#E74C3C", "#F39C12", "#F1C40F", "#2ECC71", "#1ABC9C", "#3498DB", "#9B59B6", "#34495E", "#16A085", "#27AE60", "#2980B9", "#8E44AD", "#2C3E50", "#D35400", "#C0392B", "#7F8C8D", "#BDC3C7", "#607D8B", "#FF6B6B", "#4ECDC4"];
+                
+                const specialColors = {
+                    "Gedung/Bangunan": "#E74C3C", "Bangunan": "#E74C3C", "Pemukiman": "#F39C12", "Permukiman": "#F39C12",
+                    "Kawasan Permukiman": "#F39C12", "Sawah": "#2ECC71", "Tegalan": "#27AE60", "Hutan": "#2C3E50",
+                    "Perkebunan": "#1ABC9C", "Semak/Belukar": "#9B59B6", "Danau": "#3498DB", "Rawa": "#48C9B0",
+                    "Ladang": "#F1C40F", "Tanah Kosong": "#BDC3C7"
+                };
+
+                function getColorForRemark(remark) {
+                    if (!remark || remark === "default") return "#CCCCCC";
+                    if (specialColors[remark]) return specialColors[remark];
+                    let hash = 0;
+                    for (let i = 0; i < remark.length; i++) { hash = ((hash << 5) - hash) + remark.charCodeAt(i); hash |= 0; }
+                    return colorPalette[Math.abs(hash) % colorPalette.length];
+                }
+
+                // Variabel untuk legend
+                let lahanLegendElement = null;
+                let kesesuaianLegendElement = null;
+
+                // ==================== 1. PENGGUNAAN LAHAN ====================
+                fetch('Asset/Penggunaan Lahan.json')
+                    .then(res => res.json())
+                    .then(data => {
+                        const remarkColors = new Map();
+                        const layer = L.geoJSON(data, {
+                            style: (f) => {
+                                let remark = f.properties?.REMARK || f.properties?.remark || "default";
+                                if (!remarkColors.has(remark)) remarkColors.set(remark, getColorForRemark(remark));
+                                return { color: remarkColors.get(remark), weight: 2, fillOpacity: 0.65 };
+                            },
+                            onEachFeature: (f, l) => {
+                                let remark = f.properties?.REMARK || f.properties?.remark || "Tidak diketahui";
+                                l.bindPopup(`<b>🏞️ Penggunaan Lahan</b><br><div style="display:flex;align-items:center;gap:8px;margin-top:5px;"><div style="width:16px;height:16px;background:${remarkColors.get(remark) || "#ccc"};border-radius:3px;"></div><b>${escapeHtml(remark)}</b></div>`);
+                            }
+                        });
+                        layer.addTo(map);
+                        overlayLayers["🏞️ Penggunaan Lahan"] = layer;
+                        layerControl.addOverlay(layer, "🏞️ Penggunaan Lahan");
+
+                        const uniqueRemarks = Array.from(remarkColors.keys()).sort();
+                        let legendHtml = '<div class="custom-legend"><strong>🏞️ Penggunaan Lahan</strong>';
+                        uniqueRemarks.forEach(r => {
+                            legendHtml += `<div class="legend-item"><div class="legend-color" style="background: ${remarkColors.get(r)};"></div><span>${escapeHtml(r)}</span></div>`;
+                        });
+                        legendHtml += '</div>';
+                        
+                        lahanLegendElement = L.control({ position: 'bottomright' });
+                        lahanLegendElement.onAdd = function() {
+                            const div = L.DomUtil.create('div');
+                            div.innerHTML = legendHtml;
+                            return div;
+                        };
+                        lahanLegendElement.addTo(map);
+                        console.log("Legend Penggunaan Lahan ditambahkan");
+                    })
+                    .catch(err => console.error("Gagal load Penggunaan Lahan:", err));
+
+                // ==================== 2. LOKASI KOMPETITOR ====================
+                fetch('Asset/Lokasi Kompetitor.json')
+                    .then(res => res.json())
+                    .then(data => {
+                        const layer = L.geoJSON(data, {
+                            pointToLayer: (f, latlng) => L.marker(latlng, { 
+                                icon: L.divIcon({ 
+                                    className: 'custom-marker-kompetitor', 
+                                    html: '<i class="fas fa-store" style="font-size: 14px; color: white;"></i>', 
+                                    iconSize: [32,32], 
+                                    popupAnchor: [0,-15] 
+                                }) 
+                            }),
+                            onEachFeature: (f, l) => {
+                                const nama = f.properties?.Nama || f.properties?.name || "Tidak ada nama";
+                                const jenis = f.properties?.Jenis || f.properties?.type || "Kedai Kopi";
+                                const alamat = f.properties?.Alamat || f.properties?.address || "";
+                                const coords = l.getLatLng();
+                                
+                                let popupHtml = `
+                                    <div class="kompetitor-popup">
+                                        <div class="kompetitor-popup-header">
+                                            <i class="fas fa-store"></i>
+                                            <h4>${escapeHtml(nama)}</h4>
+                                        </div>
+                                        <div class="kompetitor-popup-body">
+                                            <div class="kompetitor-popup-row">
+                                                <i class="fas fa-tag"></i>
+                                                <span>${escapeHtml(jenis)}</span>
+                                            </div>
+                                `;
+                                
+                                if (alamat && alamat !== "") {
+                                    popupHtml += `
+                                            <div class="kompetitor-popup-row">
+                                                <i class="fas fa-location-dot"></i>
+                                                <span>${escapeHtml(alamat)}</span>
+                                            </div>
+                                    `;
+                                }
+                                
+                                popupHtml += `
+                                            <div class="kompetitor-popup-row">
+                                                <i class="fab fa-google"></i>
+                                                <a href="https://www.google.com/search?q=${encodeURIComponent(nama)}" target="_blank" rel="noopener noreferrer" style="color:#4285F4; text-decoration:none; font-weight:500;">
+                                                    🔍 Cari di Google
+                                                </a>
+                                            </div>
+                                            <div class="kompetitor-popup-row">
+                                                <i class="fas fa-map-pin"></i>
+                                                <a href="https://www.google.com/maps?q=${coords.lat},${coords.lng}" target="_blank" rel="noopener noreferrer" style="color:#34A853; text-decoration:none; font-weight:500;">
+                                                    📍 Lihat di Google Maps
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                l.bindPopup(popupHtml, { maxWidth: 280, className: 'kompetitor-popup-wrapper' });
+                            }
+                        });
+                        
+                        layer.addTo(map);
+                        overlayLayers["🏪 Lokasi Kompetitor"] = layer;
+                        layerControl.addOverlay(layer, "🏪 Lokasi Kompetitor");
+                    })
+                    .catch(err => console.error("Gagal load Kompetitor:", err));
+
+                // ==================== 3. KESESUAIAN COFFEE SHOP ====================
+                fetch('Asset/Kesesuaian Coffee Shop.json')
+                    .then(res => res.json())
+                    .then(data => {
+                        let kelasField = null;
+                        if (data.features && data.features[0]) {
+                            const props = data.features[0].properties;
+                            const possibleFields = ['Kelas', 'kelas', 'Tingkat', 'tingkat', 'Kesesuaian', 'kesesuaian', 'Class', 'class', 'NAMA', 'nama', 'Label', 'label'];
+                            for (const field of possibleFields) {
+                                if (props.hasOwnProperty(field)) {
+                                    kelasField = field;
+                                    break;
+                                }
+                            }
+                            if (!kelasField && Object.keys(props).length > 0) {
+                                kelasField = Object.keys(props)[0];
+                            }
+                            console.log("Field yang digunakan untuk klasifikasi:", kelasField);
+                        }
+                        
+                        const kelasColors = {
+                            "sangat tidak sesuai": "#FF0000",
+                            "tidak sesuai": "#FF6666", 
+                            "sedang": "#FFA500",
+                            "cukup sesuai": "#FFA500",
+                            "sesuai": "#90EE90",
+                            "sangat sesuai": "#008000",
+                            "Sangat Tidak Sesuai": "#FF0000",
+                            "Tidak Sesuai": "#FF6666",
+                            "Sedang": "#FFA500",
+                            "Cukup Sesuai": "#FFA500",
+                            "Sesuai": "#90EE90",
+                            "Sangat Sesuai": "#008000"
+                        };
+                        
+                        const getColor = (k) => {
+                            if (!k) return "#CCCCCC";
+                            const key = String(k).toLowerCase().trim();
+                            return kelasColors[key] || "#CCCCCC";
+                        };
+                        
+                        const uniqueValues = new Set();
+                        data.features.forEach(f => {
+                            let val = f.properties?.[kelasField] || f.properties?.Kelas || f.properties?.kelas;
+                            if (val) uniqueValues.add(val);
+                        });
+                        console.log("Nilai unik yang ditemukan:", [...uniqueValues]);
+                        
+                        const layer = L.geoJSON(data, {
+                            style: (f) => {
+                                let kelas = f.properties?.[kelasField] || f.properties?.Kelas || f.properties?.kelas || "default";
+                                const color = getColor(kelas);
+                                return { color: color, weight: 2, fillOpacity: 0.5 };
+                            },
+                            onEachFeature: (f, l) => {
+                                let kelas = f.properties?.[kelasField] || f.properties?.Kelas || f.properties?.kelas || "Tidak diketahui";
+                                const color = getColor(kelas);
+                                l.bindPopup(`<b>☕ Tingkat Kesesuaian</b><br><div style="display:flex;align-items:center;gap:8px;margin-top:5px;"><div style="width:16px;height:16px;background:${color};border-radius:3px;"></div><b>${escapeHtml(kelas)}</b></div>`);
+                            }
+                        });
+                        
+                        layer.addTo(map);
+                        overlayLayers["☕ Kesesuaian Coffee Shop"] = layer;
+                        layerControl.addOverlay(layer, "☕ Kesesuaian Coffee Shop");
+
+                        let legendHtml = `<div class="custom-legend"><strong>☕ Kesesuaian Coffee Shop</strong>`;
+                        const legendOrder = ["Sangat Tidak Sesuai", "Tidak Sesuai", "Sedang", "Sesuai", "Sangat Sesuai"];
+                        const legendColors = ["#FF0000", "#FF6666", "#FFA500", "#90EE90", "#008000"];
+                        
+                        for (let i = 0; i < legendOrder.length; i++) {
+                            legendHtml += `<div class="legend-item"><div class="legend-color" style="background: ${legendColors[i]};"></div><span>${legendOrder[i]}</span></div>`;
+                        }
+                        legendHtml += `</div>`;
+                        
+                        kesesuaianLegendElement = L.control({ position: 'bottomright' });
+                        kesesuaianLegendElement.onAdd = function() {
+                            const div = L.DomUtil.create('div');
+                            div.innerHTML = legendHtml;
+                            return div;
+                        };
+                        
+                        if (map.hasLayer(layer)) {
+                            kesesuaianLegendElement.addTo(map);
+                            console.log("Legend Kesesuaian ditambahkan");
+                        }
+                    })
+                    .catch(err => console.error("Gagal load Kesesuaian:", err));
+
+                // ==================== 4. ADMIN LEMBANG ====================
+                fetch('Asset/AdminLembang.json')
+                    .then(res => res.json())
+                    .then(data => {
+                        const layer = L.geoJSON(data, {
+                            style: { color: "#d40f0f", weight: 2, fillOpacity: 0.1 },
+                            onEachFeature: (f, l) => { l.bindPopup("🗺️ Wilayah: " + escapeHtml(f.properties?.name || f.properties?.ADMIN || "Lembang")); }
+                        });
+                        layer.addTo(map);
+                        overlayLayers["🗺️ Admin Lembang"] = layer;
+                        layerControl.addOverlay(layer, "🗺️ Admin Lembang");
+                    })
+                    .catch(err => console.error("Gagal load Admin:", err));
+
+                // ==================== LEGEND TOGGLE ====================
+                map.on('overlayadd', function(e) {
+                    console.log("Layer ditambahkan:", e.name);
+                    if (e.name === "🏞️ Penggunaan Lahan" && lahanLegendElement) {
+                        lahanLegendElement.addTo(map);
+                    }
+                    if (e.name === "☕ Kesesuaian Coffee Shop" && kesesuaianLegendElement) {
+                        kesesuaianLegendElement.addTo(map);
+                    }
+                });
+
+                map.on('overlayremove', function(e) {
+                    console.log("Layer dihapus:", e.name);
+                    if (e.name === "🏞️ Penggunaan Lahan" && lahanLegendElement) {
+                        map.removeControl(lahanLegendElement);
+                    }
+                    if (e.name === "☕ Kesesuaian Coffee Shop" && kesesuaianLegendElement) {
+                        map.removeControl(kesesuaianLegendElement);
+                    }
+                });
+
+                // Locate control
+                L.control.locate({ position: 'topright', strings: { title: "Temukan lokasi saya" }, flyTo: true }).addTo(map);
+
+                // Search
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                    searchInput.addEventListener('input', function() {
+                        const term = this.value.toLowerCase();
+                        map.eachLayer(layer => {
+                            if (layer.feature?.properties && (layer.feature.properties.Nama || layer.feature.properties.name)) {
+                                const nama = (layer.feature.properties.Nama || layer.feature.properties.name || "").toLowerCase();
+                                const jenis = (layer.feature.properties.Jenis || "").toLowerCase();
+                                if (nama.includes(term) || jenis.includes(term)) { 
+                                    if (!map.hasLayer(layer)) layer.addTo(map); 
+                                } else { 
+                                    if (map.hasLayer(layer)) map.removeLayer(layer); 
+                                }
+                            }
+                        });
+                    });
+                }
+
+// Cards click - menggunakan nama untuk mencari koordinat dari data kompetitor
+document.querySelectorAll('.hospital-card').forEach((card, idx) => {
+    card.addEventListener('click', async () => {
+        // Ambil nama dari card
+        const namaCard = card.querySelector('.hospital-name')?.textContent || "";
+        console.log("Card diklik:", namaCard);
+        
+        // Coba cari koordinat dari file Lokasi Kompetitor.json
+        try {
+            const response = await fetch('Asset/Lokasi Kompetitor.json');
+            const data = await response.json();
+            
+            // Cari feature dengan nama yang cocok
+            let foundCoords = null;
+            let foundName = null;
+            
+            data.features.forEach(feature => {
+                const nama = feature.properties?.Nama || feature.properties?.name || "";
+                if (nama.toLowerCase().includes(namaCard.toLowerCase()) || namaCard.toLowerCase().includes(nama.toLowerCase())) {
+                    const coords = feature.geometry?.coordinates;
+                    if (coords && coords.length >= 2) {
+                        foundCoords = [coords[1], coords[0]]; // Leaflet uses [lat, lng]
+                        foundName = nama;
+                    }
+                }
+            });
+            
+            if (foundCoords) {
+                console.log("Menuju ke:", foundName, foundCoords);
+                map.flyTo(foundCoords, 16);
+            } else {
+                console.log("Koordinat tidak ditemukan untuk:", namaCard);
+                // Fallback ke koordinat default
+                const fallbackCoords = [[-6.813326, 107.620216], [-6.826026, 107.629969], [-6.804956, 107.592028]];
+                if (idx < fallbackCoords.length) {
+                    map.flyTo(fallbackCoords[idx], 16);
+                }
+            }
+        } catch (err) {
+            console.error("Gagal load data kompetitor:", err);
+            // Fallback
+            const fallbackCoords = [[-6.813326, 107.620216], [-6.826026, 107.629969], [-6.804956, 107.592028]];
+            if (idx < fallbackCoords.length) {
+                map.flyTo(fallbackCoords[idx], 16);
+            }
+        }
+    });
+});
+            });
+        </script>
+    </body>
+    </html>
